@@ -1,0 +1,14 @@
+[requires]
+asio/1.30.2
+mbedtls/3.6.0
+
+[options]
+mbedtls/*:shared=False
+mbedtls/*:enable_threading=False
+
+[generators]
+CMakeDeps
+CMakeToolchain
+
+[layout]
+cmake_layout
