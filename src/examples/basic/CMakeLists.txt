@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
 
-set(EXPORT_COMPILE_COMMANDS ON)
-
 project(asiotls-examples-basic 
   VERSION 0.0.0 
   LANGUAGES CXX)
