@@ -49,16 +49,7 @@ class context : public context_base {
   void set_options(options o, std::error_code& ec);
 
   /// Set the peer verification mode.
-  void set_verify_mode(verify_mode v);
-
-  /// Set the peer verification mode.
-  void set_verify_mode(verify_mode v, std::error_code& ec);
-
-  /// Set the peer verification depth.
-  void set_verify_depth(int depth);
-
-  /// Set the peer verification depth.
-  void set_verify_depth(int depth, std::error_code& ec);
+  void set_verify_mode(verify_mode v) noexcept;
 
   /// Set the callback used to verify peer certificates.
   template <class VerifyCallback>
@@ -98,19 +89,17 @@ class context : public context_base {
   void add_verify_path(const std::string& path, std::error_code& ec);
 
   /// Use a certificate from a memory buffer.
-  void use_certificate(const asio::const_buffer& certificate,
-                       file_format format);
+  void use_certificate(const asio::const_buffer& certificate);
 
   /// Use a certificate from a memory buffer.
   void use_certificate(const asio::const_buffer& certificate,
-                       file_format format, std::error_code& ec);
+                       std::error_code& ec);
 
   /// Use a certificate from a file.
-  void use_certificate_file(const std::string& filename, file_format format);
+  void use_certificate_file(const std::string& filename);
 
   /// Use a certificate from a file.
-  void use_certificate_file(const std::string& filename, file_format format,
-                            std::error_code& ec);
+  void use_certificate_file(const std::string& filename, std::error_code& ec);
 
   /// Use a certificate chain from a memory buffer.
   void use_certificate_chain(const asio::const_buffer& chain);
@@ -127,19 +116,17 @@ class context : public context_base {
                                   std::error_code& ec);
 
   /// Use a private key from a memory buffer.
-  void use_private_key(const asio::const_buffer& private_key,
-                       file_format format);
+  void use_private_key(const asio::const_buffer& private_key);
 
   /// Use a private key from a memory buffer.
   void use_private_key(const asio::const_buffer& private_key,
-                       file_format format, std::error_code& ec);
+                       std::error_code& ec);
 
   /// Use a private key from a file.
-  void use_private_key_file(const std::string& filename, file_format format);
+  void use_private_key_file(const std::string& filename);
 
   /// Use a private key from a file.
-  void use_private_key_file(const std::string& filename, file_format format,
-                            std::error_code& ec);
+  void use_private_key_file(const std::string& filename, std::error_code& ec);
 
   /// Use an RSA private key from a memory buffer.
   // void use_rsa_private_key(const asio::const_buffer& private_key,
@@ -185,6 +172,9 @@ class context : public context_base {
 
   // The underlying native implementation.
   native_handle_type handle_;
+  mbedtls_x509_crt cacert_;
+  mbedtls_x509_crt cert_;
+  mbedtls_pk_context privkey_;
 };
 }  // namespace asiotls
 

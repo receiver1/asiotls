@@ -11,42 +11,6 @@ namespace asiotls {
 class context_base {
  public:
   enum method {
-    /// Generic SSL version 2.
-    sslv2,
-
-    /// SSL version 2 client.
-    sslv2_client,
-
-    /// SSL version 2 server.
-    sslv2_server,
-
-    /// Generic SSL version 3.
-    sslv3,
-
-    /// SSL version 3 client.
-    sslv3_client,
-
-    /// SSL version 3 server.
-    sslv3_server,
-
-    /// Generic TLS version 1.
-    tlsv1,
-
-    /// TLS version 1 client.
-    tlsv1_client,
-
-    /// TLS version 1 server.
-    tlsv1_server,
-
-    /// Generic SSL/TLS.
-    sslv23,
-
-    /// SSL/TLS client.
-    sslv23_client,
-
-    /// SSL/TLS server.
-    sslv23_server,
-
     /// Generic TLS version 1.1.
     tlsv11,
 

@@ -5,18 +5,28 @@
 #include <asio/ip/tcp.hpp>
 #include <asiotls.hpp>
 #include <iostream>
+#include <system_error>
 
 int main() {
-  asio::io_context service{};
+  using namespace std;
+  using namespace asio;
 
-  asiotls::context context{asiotls::context::method::tlsv13};
-  asiotls::stream<asio::ip::tcp::socket> stream{service, context};
-  asio::connect(stream.lowest_layer(),
-                asio::ip::tcp::resolver{service}.resolve("google.com", "80"));
+  try {
+    io_context service{};
 
-  stream.handshake(asiotls::stream_base::handshake_type::client);
+    asiotls::context context{asiotls::context::method::tlsv13};
+    context.use_certificate(buffer("hello world"));
 
-  service.run();
+    asiotls::stream<ip::tcp::socket> stream{service, context};
+    connect(stream.lowest_layer(),
+            ip::tcp::resolver{service}.resolve("google.com", "80"));
+
+    stream.handshake(asiotls::stream_base::handshake_type::client);
+
+    service.run();
+  } catch (std::system_error& ec) {
+    cout << ec.what() << endl;
+  }
 
   return 0;
 }
