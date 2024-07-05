@@ -4,6 +4,7 @@
 #include <asio/ip/address.hpp>
 #include <asio/ip/tcp.hpp>
 #include <asiotls.hpp>
+#include <filesystem>
 #include <iostream>
 #include <system_error>
 
@@ -15,7 +16,7 @@ int main() {
     io_context service{};
 
     asiotls::context context{asiotls::context::method::tlsv13};
-    context.use_certificate(buffer("hello world"));
+    context.add_verify_path(std::filesystem::current_path() / "certs");
 
     asiotls::stream<ip::tcp::socket> stream{service, context};
     connect(stream.lowest_layer(),

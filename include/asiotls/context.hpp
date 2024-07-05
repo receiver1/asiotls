@@ -1,12 +1,14 @@
 #ifndef ASIOTLS_CONTEXT_HPP
 #define ASIOTLS_CONTEXT_HPP
 
-#include <mbedtls/ssl.h>
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif  // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include <mbedtls/ssl.h>
+
 #include <asio/buffer.hpp>
+#include <filesystem>
 #include <system_error>
 
 #include "context_base.hpp"
@@ -82,11 +84,11 @@ class context : public context_base {
 
   /// Add a directory containing certificate authority files to be used for
   /// performing verification.
-  void add_verify_path(const std::string& path);
+  void add_verify_path(const std::filesystem::path& path);
 
   /// Add a directory containing certificate authority files to be used for
   /// performing verification.
-  void add_verify_path(const std::string& path, std::error_code& ec);
+  void add_verify_path(const std::filesystem::path& path, std::error_code& ec);
 
   /// Use a certificate from a memory buffer.
   void use_certificate(const asio::const_buffer& certificate);
@@ -172,7 +174,7 @@ class context : public context_base {
 
   // The underlying native implementation.
   native_handle_type handle_;
-  mbedtls_x509_crt cacert_;
+  std::vector<mbedtls_x509_crt> cacerts_;
   mbedtls_x509_crt cert_;
   mbedtls_pk_context privkey_;
 };

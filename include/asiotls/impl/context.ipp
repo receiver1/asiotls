@@ -1,5 +1,6 @@
 #ifndef ASIOTLS_IMPL_CONTEXT_IPP
 #define ASIOTLS_IMPL_CONTEXT_IPP
+
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif  // defined(_MSC_VER) && (_MSC_VER >= 1200)
@@ -18,7 +19,6 @@
 namespace asiotls {
 context::context(context::method m) : handle_{} {
   mbedtls_ssl_config_init(&handle_);
-  mbedtls_x509_crt_init(&cacert_);
   mbedtls_x509_crt_init(&cert_);
   mbedtls_pk_init(&privkey_);
 
@@ -65,6 +65,8 @@ context::context(context::method m) : handle_{} {
                                    MBEDTLS_SSL_MINOR_VERSION_4);
     } break;
   }
+
+  mbedtls_ssl_conf_ca_chain(&handle_, cacerts_.data(), nullptr);
 }
 
 context::context(context::native_handle_type native_handle)
@@ -89,7 +91,9 @@ context& context::operator=(context&& other) {
 
 context::~context() {
   mbedtls_ssl_config_free(&handle_);
-  mbedtls_x509_crt_free(&cacert_);
+  for (auto& cert : cacerts_) {
+    mbedtls_x509_crt_free(&cert);
+  }
   mbedtls_x509_crt_free(&cert_);
   mbedtls_pk_free(&privkey_);
 }
@@ -128,7 +132,17 @@ void context::load_verify_file(const std::string& filename) {
 
 void context::load_verify_file(const std::string& filename,
                                std::error_code& ec) {
-  throw "Function is not implemented yet";
+  mbedtls_x509_crt cert{};
+  mbedtls_x509_crt_init(&cert);
+
+  if (auto ret = mbedtls_x509_crt_parse_file(&cert, filename.c_str());
+      ret != 0) {
+    ec.assign(ret, error::get_tls_category());
+    mbedtls_x509_crt_free(&cert);
+    return;
+  }
+
+  cacerts_.push_back(std::move(cert));
 }
 
 void context::add_certificate_authority(const asio::const_buffer& ca) {
@@ -139,13 +153,18 @@ void context::add_certificate_authority(const asio::const_buffer& ca) {
 
 void context::add_certificate_authority(const asio::const_buffer& ca,
                                         std::error_code& ec) {
+  mbedtls_x509_crt cert{};
+  mbedtls_x509_crt_init(&cert);
+
   if (auto ret = mbedtls_x509_crt_parse(
-          &cacert_, static_cast<const unsigned char*>(ca.data()), ca.size());
+          &cert, static_cast<const unsigned char*>(ca.data()), ca.size());
       ret != 0) {
     ec.assign(ret, error::get_tls_category());
+    mbedtls_x509_crt_free(&cert);
     return;
   }
-  mbedtls_ssl_conf_ca_chain(&handle_, &cacert_, nullptr);
+
+  cacerts_.push_back(std::move(cert));
 }
 
 void context::set_default_verify_paths() {
@@ -158,14 +177,17 @@ void context::set_default_verify_paths(std::error_code& ec) {
   throw "Function is not implemented yet";
 }
 
-void context::add_verify_path(const std::string& path) {
+void context::add_verify_path(const std::filesystem::path& path) {
   std::error_code ec{};
   add_verify_path(path, ec);
   asio::detail::throw_error(ec, "add_verify_path");
 }
 
-void context::add_verify_path(const std::string& path, std::error_code& ec) {
-  throw "Function is not implemented yet";
+void context::add_verify_path(const std::filesystem::path& path,
+                              std::error_code& ec) {
+  for (const auto& entry : std::filesystem::directory_iterator{path}) {
+    if (entry.is_directory()) continue;
+  }
 }
 
 void context::use_certificate(const asio::const_buffer& certificate) {
